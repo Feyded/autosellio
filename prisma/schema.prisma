@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id
+  email     String
+  firstName String
+  lastName  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  posts     Post[]
+  likes     Like[]
+  comments  Comment[]
+  products  Product[]
+}
+
+model Post {
+  id        String    @id @default(cuid())
+  content   String
+  postImage String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  likes     Like[]
+  comments  Comment[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+}
+
+model Like {
+  id     String  @id @default(cuid())
+  User   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String?
+}
+
+model Product {
+  id        String   @id @default(cuid())
+  product   String
+  price     Int
+  stock     Int
+  category  String
+  sku       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User ?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?
+}
