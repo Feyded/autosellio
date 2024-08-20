@@ -4,13 +4,30 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-export async function createProduct(formData: FormData) {
+export async function createProduct(prevState: any, formData: FormData) {
   const { getUser } = getKindeServerSession();
   const user = await getUser();
 
   if (!user) return;
 
-  const result = await prisma.product.create({
+  const productSchema = z.object({
+    name: z.string().min(3, "Product name is required"),
+    price: z.coerce.number().min(1, "Price must be greater than 1"),
+    stock: z.coerce.number().min(1, "Stock must be greater than 1"),
+    category: z.string().min(1, "Category is required"),
+    sku: z.string().min(1, "SKU is required"),
+  })
+
+  const data = Object.fromEntries(formData);
+  const result = productSchema.safeParse(data);
+  
+  if(!result.success) return {
+    errors: result.error.flatten().fieldErrors,
+    message: 'Missing Fields. Failed to Create Invoice.',
+  };
+  
+
+  await prisma.product.create({
     data: {
       product: formData.get("name") as string,
       price: Number(formData.get("price")),
@@ -24,11 +41,11 @@ export async function createProduct(formData: FormData) {
   revalidatePath("/digital-store");
 }
 
-export async function editProduct(formData: FormData) {
+export async function editProduct( id: string, formData: FormData) {
   try {
     const result = await prisma.product.update({
       where: {
-        id: "clzut4jdn0003j9277rgj4j1z",
+        id,
       },
       data: {
         product: formData.get("name") as string,
@@ -71,10 +88,11 @@ export async function testProduct(prevState: any, formData: FormData) {
 
   // Parse and validate the data safely
   const result = FormDataSchema.safeParse(form);
-  console.log(result);
+
   if (!result.success) {
     return {
-      errors: result.error
+      errors: result.error.flatten().fieldErrors,
+      message: "Missing Fields, Failed to Create User"
     }
   }
 

@@ -3,18 +3,13 @@
 import { testProduct } from "@/lib/action/product";
 import { useFormState } from "react-dom";
 
-const initialState = {
-  message: '',
-}
-
-
 export default function Page() {
-  const [error, formAction] = useFormState(testProduct, null);
-  console.log(error);
+  const [state, dispatch] = useFormState(testProduct, null);
+  console.log(state);
   return (
     <div>
       <div className="w-full max-w-xs">
-        <form action={formAction} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <form action={dispatch} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
           <div className="mb-4">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
@@ -38,15 +33,15 @@ export default function Page() {
               Password
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+              className={`shadow appearance-none border ${ state?.errors?.password && 'border-red-500'} rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline`}
               name="password"
               id="password"
               type="password"
               placeholder="******************"
             />
-            {/* <p className="text-red-500 text-xs italic">
+            {state?.errors?.password && <p className="text-red-500 text-xs italic">
               Please choose a password.
-            </p> */}
+            </p>}
           </div>
           <div className="flex items-center justify-between">
             <button
